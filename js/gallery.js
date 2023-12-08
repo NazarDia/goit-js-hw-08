@@ -64,62 +64,51 @@ const images = [
   },
 ];
 const galleryContainer = document.querySelector('.gallery');
-const lightbox = document.getElementById('lightbox');
-const lightboxImage = document.getElementById('lightbox-image');
-images.forEach(function (image) {
-  const galleryItem = document.createElement('li');
-  galleryItem.classList.add('gallery-item');
 
-  const galleryLink = document.createElement('a');
-  galleryLink.classList.add('gallery-link');
-  galleryLink.href = image.original;
+const elements = images
+  .map(
+    image => `
+    <li class="gallery-item">
+  <a class="gallery-link" href="${image.original}">
+    <img
+      class="gallery-image"
+      src="${image.preview}"
+      data-source="${image.original}"
+      alt="${image.description}"
+    />
+  </a>
+</li>
+`,
+  )
+  .join('');
 
-  const galleryImage = document.createElement('img');
-  galleryImage.classList.add('gallery-image');
-  galleryImage.src = image.preview;
-  galleryImage.setAttribute('data-source', image.original);
-  galleryImage.alt = image.description;
+galleryContainer.insertAdjacentHTML('afterbegin', elements);
 
-  galleryLink.appendChild(galleryImage);
-  galleryItem.appendChild(galleryLink);
-  galleryContainer.appendChild(galleryItem);
-});
-// galleryContainer.addEventListener('click', function (event) {
-//   event.preventDefault();
-
-//   const clickedElement = event.target;
-
-//   if (clickedElement.classList.contains('gallery-image')) {
-//     const largeImageSource = clickedElement.getAttribute('data-source');
-//     console.log('Посилання на велике зображення:', largeImageSource);
-//     lightboxImage.src = largeImageSource;
-
-//     const lightboxInstance = basicLightbox.create(lightbox);
-//     lightboxInstance.show();
-//   }
-// });
-let lightboxInstance;
-
-galleryContainer.addEventListener('click', function (event) {
+galleryContainer.addEventListener('click', event => {
   event.preventDefault();
-
-  const clickedElement = event.target;
-
-  if (clickedElement.classList.contains('gallery-image')) {
-    const largeImageSource = clickedElement.getAttribute('data-source');
-    console.log('Посилання на велике зображення:', largeImageSource);
-    lightboxImage.src = largeImageSource;
-
-    lightboxInstance = basicLightbox.create(lightbox);
-    lightboxInstance.show();
-
-    document.addEventListener('keydown', handleEscapeKey);
+  if (event.target.nodeName !== 'IMG') {
+    return;
   }
+  function onKeyDown(event) {
+    if (event.code === 'Escape') {
+      instance.close();
+    }
+  }
+  const largeImage = event.target.dataset.source;
+
+  const instance = basicLightbox.create(
+    `
+    <img width="800" height="600" src="${largeImage}" alt="${event.target.alt}">
+  `,
+    {
+      onShow: () => {
+        window.addEventListener('keydown', onKeyDown);
+      },
+      onClose: () => {
+        window.removeEventListener('keydown', onKeyDown);
+      },
+    },
+  );
+
+  instance.show();
 });
-
-function handleEscapeKey(event) {
-  if (event.key === 'Escape') {
-    lightboxInstance.close();
-    document.removeEventListener('keydown', handleEscapeKey);
-  }
-}
