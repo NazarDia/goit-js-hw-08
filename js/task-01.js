@@ -64,6 +64,8 @@ const images = [
   },
 ];
 const galleryContainer = document.querySelector('.gallery');
+const lightbox = document.getElementById('lightbox');
+const lightboxImage = document.getElementById('lightbox-image');
 images.forEach(function (image) {
   const galleryItem = document.createElement('li');
   galleryItem.classList.add('gallery-item');
@@ -77,11 +79,47 @@ images.forEach(function (image) {
   galleryImage.src = image.preview;
   galleryImage.setAttribute('data-source', image.original);
   galleryImage.alt = image.description;
-  galleryLink.addEventListener('click', function (event) {
-    event.preventDefault();
-  });
 
   galleryLink.appendChild(galleryImage);
   galleryItem.appendChild(galleryLink);
   galleryContainer.appendChild(galleryItem);
 });
+// galleryContainer.addEventListener('click', function (event) {
+//   event.preventDefault();
+
+//   const clickedElement = event.target;
+
+//   if (clickedElement.classList.contains('gallery-image')) {
+//     const largeImageSource = clickedElement.getAttribute('data-source');
+//     console.log('Посилання на велике зображення:', largeImageSource);
+//     lightboxImage.src = largeImageSource;
+
+//     const lightboxInstance = basicLightbox.create(lightbox);
+//     lightboxInstance.show();
+//   }
+// });
+let lightboxInstance;
+
+galleryContainer.addEventListener('click', function (event) {
+  event.preventDefault();
+
+  const clickedElement = event.target;
+
+  if (clickedElement.classList.contains('gallery-image')) {
+    const largeImageSource = clickedElement.getAttribute('data-source');
+    console.log('Посилання на велике зображення:', largeImageSource);
+    lightboxImage.src = largeImageSource;
+
+    lightboxInstance = basicLightbox.create(lightbox);
+    lightboxInstance.show();
+
+    document.addEventListener('keydown', handleEscapeKey);
+  }
+});
+
+function handleEscapeKey(event) {
+  if (event.key === 'Escape') {
+    lightboxInstance.close();
+    document.removeEventListener('keydown', handleEscapeKey);
+  }
+}
